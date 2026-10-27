@@ -50,6 +50,25 @@ async def main() -> None:
             print(f"  Put Premium:    ₹{put_premium:,.2f} (IV: {put_iv:.1f}%)")
             print(f"  --------------------------------------------------")
             print(f"  STRADDLE SELL:  ₹{straddle_price:,.2f}")
+                        # Calculate wings (500 points away)
+            wing_ce = atm_strike + 500
+            wing_pe = atm_strike - 500
+            
+            # Find wing premiums
+            wing_ce_prem = 0.0
+            wing_pe_prem = 0.0
+            for row in result.atm_window(n=10):
+                if row.strike == wing_ce and row.ce:
+                    wing_ce_prem = row.ce.last_price
+                if row.strike == wing_pe and row.pe:
+                    wing_pe_prem = row.pe.last_price
+
+            ic_premium = straddle_price - (wing_ce_prem + wing_pe_prem)
+            
+            print(f"  --------------------------------------------------")
+            print(f"  IRON CONDOR (Wings {wing_pe} PE / {wing_ce} CE):")
+            print(f"  Net Premium:    ₹{ic_premium:,.2f}")
+            print(f"  --------------------------------------------------")
             print(f"  Implied Move:   ±₹{expected_move:,.2f} ({expected_move_pct:.2f}%)")
             print(f"  --------------------------------------------------")
             print(f"  To profit, Nifty must stay between:")

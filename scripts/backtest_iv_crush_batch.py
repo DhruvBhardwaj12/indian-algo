@@ -108,7 +108,7 @@ def main():
     print(f"{'=' * 80}\n")
     
     try:
-        events_df = pd.read_csv("data/events.csv")
+        events_df = pd.read_csv("data/events_monthly.csv")
         EVENTS = list(zip(events_df["t1_date"], events_df["t2_date"]))
     except FileNotFoundError:
         print("Error: data/events.csv not found. Please create it first.")
@@ -152,4 +152,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
