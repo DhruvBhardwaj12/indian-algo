@@ -1,9 +1,16 @@
-"""Live Nifty Options Tracker via indiaopt."""
+"""Live Nifty Options Tracker — Iron Condor IV Crush Edition.
+
+Run this on T-1 (e.g., day before US CPI) at 3:00 PM IST.
+Run it again on T (day of event) at 9:30 AM IST or 3:00 PM IST.
+"""
 
 from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 from indiaopt import NSEClient
+
+# We buy wings 500 points away from ATM
+WING_WIDTH = 500
 
 async def main() -> None:
     print("Fetching NSE Option Chain...")
@@ -13,70 +20,67 @@ async def main() -> None:
             spot_price = result.spot_price
             atm_strike = result.atm_strike
 
+            # Expand window to ensure we catch the 500-point wings
             atm_row = None
-            for row in result.atm_window(n=5):
+            wing_ce_row = None
+            wing_pe_row = None
+            
+            target_wing_ce = atm_strike + WING_WIDTH
+            target_wing_pe = atm_strike - WING_WIDTH
+
+            for row in result.atm_window(n=25):
                 if row.strike == atm_strike:
                     atm_row = row
-                    break
+                elif row.strike == target_wing_ce:
+                    wing_ce_row = row
+                elif row.strike == target_wing_pe:
+                    wing_pe_row = row
 
             if not atm_row:
-                print(f"Error: Could not find ATM strike {atm_strike} data.")
+                print(f"Error: Could not find ATM strike {atm_strike}.")
                 return
 
-            # Extract correct attributes
-            call_premium = atm_row.call_ltp
-            put_premium = atm_row.put_ltp
-            call_iv = atm_row.call_iv
-            put_iv = atm_row.put_iv
+            # --- ATM Straddle Data ---
+            ce_ltp = atm_row.call_ltp
+            pe_ltp = atm_row.put_ltp
+            ce_iv = atm_row.call_iv * 100 if atm_row.call_iv and atm_row.call_iv < 1.0 else atm_row.call_iv
+            pe_iv = atm_row.put_iv * 100 if atm_row.put_iv and atm_row.put_iv < 1.0 else atm_row.put_iv
             
-            # IndiaOpt usually returns IV as a percentage (e.g., 15.5) 
-            # but if it's a decimal (e.g., 0.155), we adjust.
-            if call_iv and call_iv < 1.0:
-                call_iv *= 100
-            if put_iv and put_iv < 1.0:
-                put_iv *= 100
+            straddle_premium = ce_ltp + pe_ltp
 
-            straddle_price = call_premium + put_premium
-            # Rule of thumb: Expected Move = Straddle * 0.85
-            expected_move = straddle_price * 0.85
-            expected_move_pct = (expected_move / spot_price) * 100
-            
+            # --- Wing Data ---
+            wing_ce_ltp = wing_ce_row.call_ltp if wing_ce_row else 0.0
+            wing_pe_ltp = wing_pe_row.put_ltp if wing_pe_row else 0.0
+            wing_cost = wing_ce_ltp + wing_pe_ltp
+
+            # --- Iron Condor Net Premium ---
+            ic_premium = straddle_premium - wing_cost
+
             print(f"\n{'=' * 60}")
-            print(f"  NIFTY OPTIONS TRACKER — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+            print(f"  NIFTY IV CRUSH TRACKER — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
             print(f"{'=' * 60}")
             print(f"  Spot Price:     ₹{spot_price:,.2f}")
             print(f"  ATM Strike:     {atm_strike}")
-            print(f"  Call Premium:   ₹{call_premium:,.2f} (IV: {call_iv:.1f}%)")
-            print(f"  Put Premium:    ₹{put_premium:,.2f} (IV: {put_iv:.1f}%)")
             print(f"  --------------------------------------------------")
-            print(f"  STRADDLE SELL:  ₹{straddle_price:,.2f}")
-                        # Calculate wings (500 points away)
-            wing_ce = atm_strike + 500
-            wing_pe = atm_strike - 500
+            print(f"  ATM CALL:       ₹{ce_ltp:,.2f} (IV: {ce_iv:.1f}%)")
+            print(f"  ATM PUT:        ₹{pe_ltp:,.2f} (IV: {pe_iv:.1f}%)")
+            print(f"  STRADDLE SELL:  ₹{straddle_premium:,.2f}")
+            print(f"  --------------------------------------------------")
+            if wing_ce_row and wing_pe_row:
+                print(f"  WING CALL ({target_wing_ce}):  ₹{wing_ce_ltp:,.2f}")
+                print(f"  WING PUT ({target_wing_pe}):   ₹{wing_pe_ltp:,.2f}")
+                print(f"  WING COST:      ₹{wing_cost:,.2f}")
+                print(f"  --------------------------------------------------")
+                print(f"  IRON CONDOR NET PREMIUM: ₹{ic_premium:,.2f} per unit")
+                print(f"  Total Premium (50 lot):  ₹{ic_premium * 50:,.2f}")
+            else:
+                print("  WARNING: Could not find 500-point wings. Market may have moved.")
             
-            # Find wing premiums
-            wing_ce_prem = 0.0
-            wing_pe_prem = 0.0
-            for row in result.atm_window(n=10):
-                if row.strike == wing_ce and row.ce:
-                    wing_ce_prem = row.ce.last_price
-                if row.strike == wing_pe and row.pe:
-                    wing_pe_prem = row.pe.last_price
-
-            ic_premium = straddle_price - (wing_ce_prem + wing_pe_prem)
-            
-            print(f"  --------------------------------------------------")
-            print(f"  IRON CONDOR (Wings {wing_pe} PE / {wing_ce} CE):")
-            print(f"  Net Premium:    ₹{ic_premium:,.2f}")
-            print(f"  --------------------------------------------------")
-            print(f"  Implied Move:   ±₹{expected_move:,.2f} ({expected_move_pct:.2f}%)")
-            print(f"  --------------------------------------------------")
-            print(f"  To profit, Nifty must stay between:")
-            print(f"  {spot_price - expected_move:,.2f}  and  {spot_price + expected_move:,.2f}")
             print(f"{'=' * 60}\n")
 
     except Exception as e:
         print(f"Error fetching data: {e}")
+        print("Are you running this during market hours? (9:15 AM - 3:30 PM IST)")
 
 if __name__ == "__main__":
     asyncio.run(main())
