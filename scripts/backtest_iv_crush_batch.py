@@ -11,18 +11,14 @@ LOT_SIZE = 50
 WING_WIDTH = 500
 COST_PER_LEG_BPS = 5.0
 
-EVENTS = [
-    ("2024-02-08", "2024-02-09"), # RBI Policy
-    ("2024-04-04", "2024-04-05"), # RBI Policy
-    ("2024-06-06", "2024-06-07"), # RBI Policy
-    ("2024-07-22", "2024-07-23"), # Union Budget
-    ("2024-08-07", "2024-08-08"), # RBI Policy
-    ("2024-10-08", "2024-10-09"), # RBI Policy
-    ("2024-12-05", "2024-12-06"), # RBI Policy
-    ("2025-02-05", "2025-02-06"), # RBI Policy
-    ("2025-04-08", "2025-04-09"), # RBI Policy
-    ("2025-06-05", "2025-06-06"), # RBI Policy
-]
+# Load events dynamically from CSV
+try:
+    events_df = pd.read_csv("data/events.csv")
+    EVENTS = list(zip(events_df["t1_date"], events_df["t2_date"]))
+except FileNotFoundError:
+    print("Error: data/events.csv not found. Please create it first.")
+    exit(1)
+    
 
 def load_and_filter(date_str: str, event_date: str) -> pd.DataFrame | None:
     """Load raw Bhavcopy, filter for the expiry strictly AFTER the event."""
