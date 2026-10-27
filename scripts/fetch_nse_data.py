@@ -13,16 +13,13 @@ from loguru import logger
 from indian_algo.data.nse_fetcher import fetch_symbol, save_parquet
 
 SYMBOLS = [
-    "RELIANCE.NS",
-    "HDFCBANK.NS",
-    "ICICIBANK.NS",
-    "INFY.NS",
-    "TATAMOTORS.NS",
-    "BAJFINANCE.NS",
-    "BHARTIARTL.NS",
-    "ADANIENT.NS",
-    "SBIN.NS",
-    "VEDL.NS",
+    "SUZLON.NS",
+    "YESBANK.NS",
+    "ZOMATO.NS",
+    "PAYTM.NS",
+    "BEL.NS",
+    "IDEA.NS",
+    "ADANIENT.NS",  # Kept from before, it was the only winner
 ]
 
 INTERVALS = ["5m", "15m", "1h", "1d"]
