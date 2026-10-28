@@ -52,18 +52,31 @@ def run_symbol(symbol: str, df: pd.DataFrame) -> list[dict]:
                 entry_price = price
                 entry_idx = i
         else:
-            # EXIT: RSI(2) > 60 OR 4 days held
+                        # EXIT: RSI(2) > 60 OR 4 days held
             days_held = i - entry_idx
             if rsi > 60 or days_held >= 4:
                 ret = (price - entry_price) / entry_price
-                pnl = INITIAL_EQUITY * ret * OPTION_LEVERAGE
                 
-                # FIX: When buying options, max loss is the premium paid.
-                # We assume we risk 5% of equity per trade (₹1,000).
+                # Realistic Option Return Proxy:
+                # Assume Delta 0.5, Gamma positive on wins, Theta negative on holds.
+                if ret > 0:
+                    # Winner: Gamma boost (1.5x the stock move)
+                    option_ret = ret * 1.5 * OPTION_LEVERAGE
+                else:
+                    # Loser: Damped by Theta, but still loses fast
+                    option_ret = ret * OPTION_LEVERAGE
+                    
+                # Apply 1% slippage/spread cost per round trip
+                option_ret = option_ret - 0.01
+                
+                pnl = INITIAL_EQUITY * option_ret
+                
+                # Cap max loss at premium paid (5% of equity = ₹1,000)
                 max_premium = INITIAL_EQUITY * 0.05
                 if pnl < -max_premium:
                     pnl = -max_premium
                     
+
                 
                 trades.append({
                     "symbol": symbol,
