@@ -18,6 +18,8 @@ dependencies = [
     "indiaopt>=0.1.1",
     "datasets>=5.1.0",
     "huggingface-hub>=2.3.0",
+    "pytz>=2026.4",
+    "dhan-tradehull>=3.3.2",
 ]
 
 [project.optional-dependencies]

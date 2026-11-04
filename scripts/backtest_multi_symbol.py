@@ -10,9 +10,13 @@ INITIAL_EQUITY = 20_000.0
 OPTION_LEVERAGE = 4.0
 
 SYMBOLS = [
+    # Original 10
     "RELIANCE.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", 
-    "TCS.NS", "BHARTIARTL.NS", "SBIN.NS", "LT.NS", "ITC.NS", "KOTAKBANK.NS"
+    "TCS.NS", "BHARTIARTL.NS", "SBIN.NS", "LT.NS", "ITC.NS", "KOTAKBANK.NS",
+    # New 5 Heavyweights
+    "BAJFINANCE.NS", "AXISBANK.NS", "SUNPHARMA.NS", "MARUTI.NS", "TITAN.NS"
 ]
+
 
 def compute_rsi(series: pd.Series, period: int = 2) -> pd.Series:
     delta = series.diff()
