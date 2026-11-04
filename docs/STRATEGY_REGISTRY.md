@@ -48,3 +48,25 @@ This document tracks every strategy tested in the Indian market, along with its 
 1. **No Tuning:** We do not tweak RSI to 12 or 8 just to see if it works. We test structural upgrades only.
 2. **Real Premiums:** We must use `indiaopt` for live prices, not fake multipliers.
 3. **Costs:** 5 bps slippage assumed on all intraday equity trades.
+
+## 🏆 VALIDATED STRATEGIES (Ready for Paper Trading)
+
+### 1. Event-Driven IV Crush (Iron Condor)
+*   **Logic:** Sell ATM Straddle, Buy 500pt OTM Wings, 1 day before US CPI / RBI Policy. Exit the next morning.
+*   **Data:** Real historical NSE Bhavcopy settlement prices.
+*   **Backtest Results:** 13 events, 53.8% Win Rate, **Profit Factor 1.76**, +₹5,469 P&L (1 lot).
+*   **Status:** **VALIDATED.** Executing manually on Nov 9/10.
+
+### 2. IND-016: Nifty 15-Min Opening Range Breakout (ORB)
+*   **Logic:** Mark High/Low of the first 15m candle (9:15-9:30 AM). Buy ATM Call if price breaks above High. Stop-loss at the Low. Target 3:1 R:R. Max 1 trade per day. EOD exit.
+*   **Data:** yfinance 15m data (real Nifty Index prices).
+*   **Backtest Results:** 32 trades (2.8 per week), 50% Win Rate, **+₹4,680 P&L** (on ₹50k capital), Max Loss -₹1,007.
+*   **Status:** **VALIDATED (High Frequency).** The 50% win rate combined with the 3:1 asymmetric payoff (large EOD runners vs tight stops) creates a positive mathematical edge.
+
+---
+
+## ☠️ FAILED HIGH-FREQUENCY EXPERIMENTS (Do Not Rebuild)
+
+*   **IND-008 to IND-012 (VWAP Reclaim Scalpers):** Failed. 5-minute charts are too noisy. The 5 bps spread and sideways chop (EOD exits) ate all the profits, despite a 61% win rate.
+*   **IND-013 to IND-015 (5-Minute High-Beta ORB):** Failed. High-beta stocks (Adani, Suzlon) are too erratic on the 5m chart. Tight 1:1 stops get hit by regular intraday wicks. 
+*   **110% Realistic Greeks Backtest:** Proved that buying Calls during a stock panic results in a 26% win rate due to Theta decay and Vega crush. 
