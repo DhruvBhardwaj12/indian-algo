@@ -53,9 +53,28 @@ This document tracks every strategy tested in the Indian market, along with its 
 
 ### 1. Event-Driven IV Crush (Iron Condor)
 *   **Logic:** Sell ATM Straddle, Buy 500pt OTM Wings, 1 day before US CPI / RBI Policy. Exit the next morning.
-*   **Data:** Real historical NSE Bhavcopy settlement prices.
+*   **Data Sources:** 
+    *   `data/events_monthly.csv` (Historical US CPI dates: 12 events, Jan-Dec 2024).
+    *   `data/events.csv` (Historical RBI/FOMC dates + Future Live dates for Nov 2026 - Feb 2027).
 *   **Backtest Results:** 13 events, 53.8% Win Rate, **Profit Factor 1.76**, +₹5,469 P&L (1 lot).
 *   **Status:** **VALIDATED.** Executing manually on Nov 9/10.
+*   **Execution Script:** `scripts/option_tracker.py` (Run at T-1 3:00 PM IST and T 9:30 AM IST).
+
+---
+
+## 🗓️ Operating Schedule & Live Calendar
+
+### Immediate Next Trade:
+*   **Event:** US CPI (Nov 2026 Data)
+*   **Entry (T-1):** Monday, Nov 9, 2026 at 3:00 PM IST
+*   **Exit (T):** Tuesday, Nov 10, 2026 at 9:30 AM IST
+*   **Action:** Run `uv run python scripts\option_tracker.py` on both days. Log results in `research/paper_trading/cpi_nov2026_log.md`.
+
+### Upcoming Events:
+*   **India CPI:** Nov 12 (Entry) -> Nov 13 (Exit)
+*   **RBI Policy:** Dec 3 (Entry) -> Dec 4 (Exit)
+*   **US NFP:** Dec 4 (Entry) -> Dec 7 (Exit)
+*   **US CPI & FOMC:** Dec 9 (Entry) -> Dec 10 (Exit)
 
 ### 2. IND-016: Nifty 15-Min Opening Range Breakout (ORB)
 *   **Logic:** Mark High/Low of the first 15m candle (9:15-9:30 AM). Buy ATM Call if price breaks above High. Stop-loss at the Low. Target 3:1 R:R. Max 1 trade per day. EOD exit.
