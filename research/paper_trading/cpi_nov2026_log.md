@@ -29,3 +29,10 @@
 ## Final Paper P&L
 - **Gross Premium Captured:** (T-1 Net Premium - T Net Premium) * 75
 - **Paper Profit:** ₹
+
+## Final Results (Nov 10, 2026)
+*   **Event:** US CPI
+*   **Entry Premium (Nov 9):** Naked ₹77.55 | IC ₹76.85
+*   **Exit Premium (Nov 10):** (Approx) Naked ₹5.30 | IC ₹5.25
+*   **P&L:** Naked +₹5,415 | Iron Condor +₹5,370
+*   **Lesson:** Massive IV crush. The options lost 93% of their value. The wings only cost us ₹45 in lost profit but capped our risk.

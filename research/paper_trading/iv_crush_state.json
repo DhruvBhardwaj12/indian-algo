@@ -1,0 +1,15 @@
+{
+  "equity": 50000.0,
+  "open_positions": [],
+  "closed_trades": [
+    {
+      "event": "US_CPI_Nov26",
+      "naked_entry": 77.55,
+      "naked_exit": 5.35,
+      "naked_pnl": 5415.0,
+      "ic_entry": 76.85,
+      "ic_exit": 5.25,
+      "ic_pnl": 5370.0
+    }
+  ]
+}
